@@ -11,6 +11,11 @@ class ConferenceListEncoder(ModelEncoder):
     properties = ["name"]
 
 
+class LocationListEncoder(ModelEncoder):
+    model = Location
+    properties = ["name"]
+
+
 class ConferenceDetailEncoder(ModelEncoder):
     model = Conference
     properties = [
@@ -24,6 +29,7 @@ class ConferenceDetailEncoder(ModelEncoder):
         "updated",
         "location",
     ]
+    encoders = {"location": LocationListEncoder()}
 
 
 class LocationDetailEncoder(ModelEncoder):
@@ -39,11 +45,6 @@ class LocationDetailEncoder(ModelEncoder):
 
     def get_extra_data(self, o):
         return {"state": o.state.abbreviation}
-
-
-class LocationListEncoder(ModelEncoder):
-    model = Location
-    properties = ["name"]
 
 
 def api_list_conferences(request):
@@ -74,13 +75,15 @@ def api_list_conferences(request):
 
 def api_show_conference(request, pk):
     conference = Conference.objects.get(id=pk)
-    weather = get_weather_data(conference.location.city,conference.location.state.abbreviation,
+    weather = get_weather_data(
+        conference.location.city,
+        conference.location.state.abbreviation,
     )
 
     return JsonResponse(
         {"conference": conference, "weather": weather},
         encoder=ConferenceDetailEncoder,
-        safe=False
+        safe=False,
     )
 
 
@@ -94,7 +97,7 @@ def api_list_locations(request):
         )
     else:
         content = json.loads(request.body)
-        photo = get_photo(content["city"], content["state"].abbreviation)
+        photo = get_photo(content["city"], content["state"])
         content.update(photo)
         try:
             state = State.objects.get(abbreviation=content["state"])
