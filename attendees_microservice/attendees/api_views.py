@@ -37,7 +37,7 @@ class AttendeeDetailEncoder(ModelEncoder):
 @require_http_methods(["GET", "POST"])
 def api_list_attendees(request, conference_vo_id=None):
     if request.method == "GET":
-        attendees = Attendee.objects.filter(conference=conference_vo_id)
+        attendees = Attendee.objects.filtero(conference=conference_vo_id)
         return JsonResponse(
             {"attendees": attendees},
             safe=False,
